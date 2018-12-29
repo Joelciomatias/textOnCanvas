@@ -1,0 +1,58 @@
+<!DOCTYPE html >
+<html lang="pt-br">
+<head>
+    <title>Text on canvas</title>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+    <link href="" rel="stylesheet" type="text/css"/>
+    <script type="text/javascript" src="jquery-3.0.0.js"></script>
+    <script type="text/javascript" src="text.canvas.js"></script>
+    <link rel="stylesheet" href="style.css" type="text/css"/>
+</head>
+<body onload="init();">
+
+    <div class="container">
+        <div class="row">
+            <div class="span11">
+                <div class="demo-box">
+                    <div class="page-header">
+                        <h1>Text on canvas</h1>
+                        <input type="button" name="limpar" value="Limpar" onclick="init()">
+                        <span id="corX"></span>
+                        <span id="corY"></span>
+                    </div>
+                    <canvas id="canvas" width="736" height="442"></canvas>
+                    <div class="page-header">
+                        <a id="download" download="myImage.jpg" href="" onclick="download();">Download</a>
+                    </div>
+                    <!-- <img src=" https://via.placeholder.com/736x442" id="target" alt="[Text Over Example]"/></div> -->
+                    <!--<div id="data" class="well"></div>
+                        <button id="show">Show Data</button>
+                        <div class="clearfix"></div>-->
+                    </div>
+                </div>
+            </div>
+        </body>
+        <script>
+            function init(){
+                var canvas = document.getElementById('canvas');
+                var context = canvas.getContext('2d');
+                var imageObj = new Image();
+                // imageObj.crossOrigin = "Anonymous";
+                imageObj.onload = function() {
+                    context.drawImage(imageObj,0,0);
+                };
+                imageObj.src = 'sample.png';
+                var p = new _textCanvas.init('canvas',{
+                    color: '#551A8B',
+                    'font-size': '18px'
+                });   
+            }
+            function download(){
+                var a = document.getElementById('download');
+                var canvas = document.getElementById('canvas');
+                var image = canvas.toDataURL("image/jpg");
+                a.href = image;
+                a.click();
+            }
+        </script>
+        </html>
