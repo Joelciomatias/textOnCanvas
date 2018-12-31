@@ -18,8 +18,9 @@ window._textCanvas = (function(target,options,callback) {
             var lastClickEvent;
             var currentTextArea;
             
-            var element = document.getElementById(target);
-            // Set options
+            var element = document.getElementById(target) || document.getElementsByClassName(target)[0] 
+            || document.getElementsByName(target)[0];
+            
             var text_css = {
                 border: 'none',
                 visibility: 'visible',
@@ -53,22 +54,16 @@ window._textCanvas = (function(target,options,callback) {
                 self.newTextArea(ev);
             }
             
-            function draw(text,ev) {
+            function draw(text,ev,callback) {
                 var ctx = element.getContext('2d');
                 ctx.font = text_css["font-size"]+' '+text_css["font-family"];
                 ctx.fillStyle = text_css.color;     
                 var rect = canvas.getBoundingClientRect();
-                ctx.fillText(text.value,ev.clientX - rect.left,(ev.clientY - rect.top)+23);
+                ctx.fillText(text.value,(ev.clientX - rect.left)+1,(ev.clientY - rect.top)+17);
                 ctx.restore();
+                if(typeof(callback) == 'function') callback(text);
             }
-            //retirar
-            element.onmousemove = function(ev){
-                var sp1 = document.getElementById('corX');
-                var sp2 = document.getElementById('corY');
-                sp1.innerHTML = 'cordenada X: '+ev.x;
-                sp2.innerHTML = 'cordenada Y: '+ev.y;
-            }
-            
+
             var resizeTextArea = function(e,textArea,ev){
                 
                 var span = document.getElementById('helperSpan');
@@ -93,7 +88,7 @@ window._textCanvas = (function(target,options,callback) {
                 span.style["min-height"] = '12px';    
                 body = document.getElementsByTagName('body')[0];
                 body.parentNode.insertBefore(span, body.nextSibling);
-                
+
                 //TODO, TIRAR DO JQUERY
                 textArea.style.height = $(span).height() + 6 +'px';
                 textArea.style.width = $(span).width() + 10 + 'px';
@@ -120,6 +115,10 @@ window._textCanvas = (function(target,options,callback) {
                     textArea.style.border = '1px dotted #cccccc';
                 };
                 textArea.onblur = function() {
+                    draw(currentTextArea,lastClickEvent,function(textArea){
+                        removeTextArea(0);
+                        
+                    });
                     textArea.style.border = 'none';
                     textArea.style.display = 'none';
                 };
@@ -138,7 +137,9 @@ window._textCanvas = (function(target,options,callback) {
             
             var removeTextArea = function(index) {    
                 var elem = messages[index]
-                elem.parentNode.removeChild(elem);
+                if(elem.parentNode){
+                    elem.parentNode.removeChild(elem);
+                }
                 messages.splice(index, 1); 
             };
             

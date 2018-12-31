@@ -8,51 +8,102 @@
     <script type="text/javascript" src="text.canvas.js"></script>
     <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
-<body onload="init();">
-
+<body>
+    <h1>Text on canvas</h1>
     <div class="container">
-        <div class="row">
-            <div class="span11">
-                <div class="demo-box">
-                    <div class="page-header">
-                        <h1>Text on canvas</h1>
-                        <input type="button" name="limpar" value="Limpar" onclick="init()">
-                        <span id="corX"></span>
-                        <span id="corY"></span>
-                    </div>
-                    <canvas id="canvas" width="736" height="442"></canvas>
-                    <div class="page-header">
-                        <a id="download" download="myImage.jpg" href="" onclick="download();">Download</a>
-                    </div>
-                    <!-- <img src=" https://via.placeholder.com/736x442" id="target" alt="[Text Over Example]"/></div> -->
-                    <!--<div id="data" class="well"></div>
-                        <button id="show">Show Data</button>
-                        <div class="clearfix"></div>-->
-                    </div>
-                </div>
-            </div>
-        </body>
-        <script>
-            function init(){
-                var canvas = document.getElementById('canvas');
-                var context = canvas.getContext('2d');
-                var imageObj = new Image();
-                // imageObj.crossOrigin = "Anonymous";
-                imageObj.onload = function() {
-                    context.drawImage(imageObj,0,0);
-                };
-                imageObj.src = 'sample.png';
-                var p = new _textCanvas.init('canvas',{
-                    color: '#551A8B',
-                    'font-size': '18px'
-                });   
+        
+        <div class="page-header">
+            
+            <input type="file" id="imageLoader" name="imageLoader"/></br>
+            <input type="button" id="clear" name="limpar" value="Limpar" onclick="clear();">
+            <span id="corX"></span>
+            <span id="corY"></span>
+        </div>
+        <canvas id="canvas" width="736" height="442"></canvas>
+        <div class="page-header">
+            <input type="button" id="download" onclick="download();"value="Download"/>
+        </div>
+        
+    </div>
+</body>
+<script>
+    var imageLoader = document.getElementById('imageLoader');
+    imageLoader.addEventListener('change', handleImage, false);
+    
+    var clear = document.getElementById('clear').onclick = clearImg;
+    
+    var loaded = null;
+    var sampleSrc = 'https://unsplash.it/750/450/?random';
+    
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var img = new Image();
+    img.crossOrigin="anonymous";
+    
+    window.addEventListener('load', DrawPlaceholder(img));
+    
+    // show x & y axis
+    canvas.onmousemove = function(ev){
+        var sp1 = document.getElementById('corX');
+        var sp2 = document.getElementById('corY');
+        sp1.innerHTML = 'cordenada X: '+ev.x;
+        sp2.innerHTML = 'cordenada Y: '+ev.y;
+    }
+    function DrawPlaceholder(img) {
+        img.onload = function() {
+            DrawOverlay(img);
+        };
+        img.src = loaded || sampleSrc;
+    }
+    function handleImage(e) {
+        var reader = new FileReader();
+        var img = "";
+        var src = "";
+        reader.onload = function(event) {
+            img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img,0,0);
             }
-            function download(){
-                var a = document.getElementById('download');
-                var canvas = document.getElementById('canvas');
-                var image = canvas.toDataURL("image/jpg");
-                a.href = image;
-                a.click();
-            }
-        </script>
-        </html>
+            img.src = event.target.result;
+            
+            src = event.target.result;
+            loaded = src;
+            canvas.classList.add("show");
+            DrawOverlay(img);   
+        }
+        reader.readAsDataURL(e.target.files[0]); 
+        init();
+    }
+    function DrawOverlay(img) {
+        ctx.drawImage(img,0,0);
+        ctx.fillStyle = 'rgba(32, 144, 255, 0.0)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }   
+    function download() {
+        var url = canvas.toDataURL('png').replace(/^data:image\/[^;]+/, 'data:application/octet-stream');
+        window.open(url);
+    }
+    
+    function clearImg(){
+        var img = new Image();
+        img.crossOrigin="anonymous";
+        img.onload = function() {
+            DrawOverlay(img);
+        };
+        img.src = loaded || sampleSrc;
+    }
+    function init(){
+        //init text on canvas
+        var p = new _textCanvas.init('canvas',{
+            color: '#551A8B',
+            'font-size': '18px'
+        });
+        /*defaul config
+        var p = new _textCanvas.init('canvas',{});
+        */   
+    }
+    init();
+</script>
+</html>
