@@ -1,10 +1,13 @@
 /**
-* TextOver lib.
+* TextOnCanvas 
 *
-* @category  
+* @category  canvas lib
 * @author    Joelcio Matias
 * @license   
 */
+
+"use strict";
+
 window._textCanvas = typeof _textCanvas !== "undefined" ? _textCanvas : {};
 
 window._textCanvas = (function(target,options,callback) {
@@ -60,7 +63,7 @@ window._textCanvas = (function(target,options,callback) {
                 var ctx = element.getContext('2d');
                 ctx.font = text_css["font-size"]+' '+text_css["font-family"];
                 ctx.fillStyle = text_css.color;     
-                var rect = canvas.getBoundingClientRect();
+                var rect = element.getBoundingClientRect();
                 ctx.fillText(text.value,
                     (ev.clientX - rect.left) + settings.xAjust,
                     (ev.clientY - rect.top) + settings.yAjust
@@ -68,7 +71,6 @@ window._textCanvas = (function(target,options,callback) {
                 ctx.restore();
                 if(typeof(callback) == 'function') callback(text);
             }
-
             var resizeTextArea = function(e,textArea,ev){
                 
                 var span = document.getElementById('helperSpan');
@@ -91,7 +93,7 @@ window._textCanvas = (function(target,options,callback) {
                 span.style["font-size"] = textArea.style["font-size"]
                 span.style["line-height"] = textArea.style["line-height"] == "" ? 'normal' : textArea.style["line-height"];
                 span.style["min-height"] = '12px';    
-                body = document.getElementsByTagName('body')[0];
+                var body = document.getElementsByTagName('body')[0];
                 body.parentNode.insertBefore(span, body.nextSibling);
 
                 //TODO, TIRAR DO JQUERY
@@ -105,7 +107,7 @@ window._textCanvas = (function(target,options,callback) {
                 lastClickEvent = ev;
                 var textArea = document.createElement('textarea');
                 textArea = setStyle(textArea,settings);
-                position = mouseAbs(ev)
+                var position = mouseAbs(ev)
                 textArea.style.left = position[0]+'px';
                 textArea.style.top = position[1]+'px';
                 element.parentNode.insertBefore(textArea, element.nextSibling);
