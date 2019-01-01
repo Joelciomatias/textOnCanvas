@@ -28,6 +28,8 @@ window._textCanvas = (function(target,options,callback) {
                 padding: 0,
                 position: 'absolute',
                 top: 0,
+                xAjust:8.5,
+                yAjust:41.5,
                 left: 0,
                 background: 'none',
                 color: 'black',
@@ -59,7 +61,10 @@ window._textCanvas = (function(target,options,callback) {
                 ctx.font = text_css["font-size"]+' '+text_css["font-family"];
                 ctx.fillStyle = text_css.color;     
                 var rect = canvas.getBoundingClientRect();
-                ctx.fillText(text.value,(ev.clientX - rect.left)+1,(ev.clientY - rect.top)+17);
+                ctx.fillText(text.value,
+                    (ev.clientX - rect.left) + settings.xAjust,
+                    (ev.clientY - rect.top) + settings.yAjust
+                    );
                 ctx.restore();
                 if(typeof(callback) == 'function') callback(text);
             }
