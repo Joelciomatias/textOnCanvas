@@ -5,105 +5,23 @@
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
     <link href="" rel="stylesheet" type="text/css"/>
     <script type="text/javascript" src="jquery-3.0.0.js"></script>
-    <script type="text/javascript" src="text.canvas.min.js"></script>
+    <script type="text/javascript" src="text.canvas.js"></script>
     <link rel="stylesheet" href="style.css" type="text/css"/>
 </head>
 <body>
     <h1>Text on canvas</h1>
     <div class="container">
-        
-        <div class="page-header">
-            
+        <div class="page-header">         
             <input type="file" id="imageLoader" name="imageLoader"/></br>
             <input type="button" id="clear" name="limpar" value="Limpar" onclick="clear();">
             <span id="corX"></span>
             <span id="corY"></span>
         </div>
-        <canvas id="canvas" width="736" height="442"></canvas>
+        <canvas class="canvasTarget" width="736" height="442"></canvas>
         <div class="page-header">
             <input type="button" id="download" onclick="download();"value="Download"/>
         </div>
-        
     </div>
 </body>
-<script>
-    var imageLoader = document.getElementById('imageLoader');
-    imageLoader.addEventListener('change', handleImage, false);
-    
-    var clear = document.getElementById('clear').onclick = clearImg;
-    
-    var loaded = null;
-    var sampleSrc = 'https://unsplash.it/750/450/?random';
-    
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    var img = new Image();
-    img.crossOrigin="anonymous";
-    
-    window.addEventListener('load', DrawPlaceholder(img));
-    
-    // show x & y axis
-    canvas.onmousemove = function(ev){
-        var sp1 = document.getElementById('corX');
-        var sp2 = document.getElementById('corY');
-        sp1.innerHTML = 'cordenada X: '+ev.x;
-        sp2.innerHTML = 'cordenada Y: '+ev.y;
-    }
-    function DrawPlaceholder(img) {
-        img.onload = function() {
-            DrawOverlay(img);
-        };
-        img.src = loaded || sampleSrc;
-    }
-    function handleImage(e) {
-        var reader = new FileReader();
-        var img = "";
-        var src = "";
-        reader.onload = function(event) {
-            img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img,0,0);
-            }
-            img.src = event.target.result;
-            
-            src = event.target.result;
-            loaded = src;
-            canvas.classList.add("show");
-            DrawOverlay(img);   
-        }
-        reader.readAsDataURL(e.target.files[0]); 
-        init();
-    }
-    function DrawOverlay(img) {
-        ctx.drawImage(img,0,0);
-        ctx.fillStyle = 'rgba(32, 144, 255, 0.0)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }   
-    function download() {
-        var url = canvas.toDataURL('png').replace(/^data:image\/[^;]+/, 'data:application/octet-stream');
-        window.open(url);
-    }
-    
-    function clearImg(){
-        var img = new Image();
-        img.crossOrigin="anonymous";
-        img.onload = function() {
-            DrawOverlay(img);
-        };
-        img.src = loaded || sampleSrc;
-    }
-    function init(){
-        //init text on canvas
-        var p = new _textCanvas.init('canvas',{
-            color: '#000000',
-            'font-size': '22px'
-        });
-        /*defaul config
-        var p = new _textCanvas.init('canvas',{});
-        */   
-    }
-    init();
-</script>
+<script type="text/javascript" src="script.js"></script>
 </html>

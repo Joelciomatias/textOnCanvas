@@ -1,3 +1,4 @@
+
 /**
 * TextOnCanvas 
 *
@@ -18,11 +19,12 @@ window._textCanvas = (function(target,options,callback) {
             
             var self = this;            
             var messages = []
-            var lastClickEvent;
-            var currentTextArea;
+            var canvasOffLeft=null;
+            var canvasOffTop=null;
+            var posX=null;
+            var posY=null;
             
-            var element = document.getElementById(target) || document.getElementsByClassName(target)[0] 
-            || document.getElementsByName(target)[0];
+            var element = document.getElementById(target) || document.getElementsByClassName(target)[0] || document.getElementsByName(target)[0];
             
             var text_css = {
                 border: 'none',
@@ -30,9 +32,12 @@ window._textCanvas = (function(target,options,callback) {
                 margin: 0,
                 padding: 0,
                 position: 'absolute',
+                'z-index':9999,
                 top: 0,
-                xAjust:8.5,
-                yAjust:41.5,
+                xAjustClick:0,
+                yAjustClick:0,
+                xAjust:0,
+                yAjust:0,
                 left: 0,
                 background: 'none',
                 color: 'black',
@@ -48,30 +53,63 @@ window._textCanvas = (function(target,options,callback) {
                 '-webkit-box-shadow': 'none',
                 'resize': 'none'
             };
-            //TODO, TIRAR DO JQUERY
+            
             var settings = $.extend(text_css, options);
             
-            var mouseAbs = function(e) {  
+            this.mouseAbs = (e) => {  
                 return [e.pageX, e.pageY];
             };
             
-            element.onclick = function(ev) {
-                self.newTextArea(ev);
+            element.ondblclick = (ev) => {              
+                this.newTextArea(ev);
             }
             
-            function draw(text,ev,callback) {
+            $('.'+target).dblclick(function(e) {
+                canvasOffLeft = $(this).offset().left;
+                canvasOffTop = $(this).offset().top;
+                posX = e.pageX - ($(this).offset().left);
+                posY = e.pageY - ($(this).offset().top);
+            });
+            
+            this.draw = (text,ev,callback) => {
+                let splited = text.value.split('\n');
+                console.log(splited);
+                var textAreaMinWidth = parseInt(settings.width.replace(/[^0-9\.]+/g,''));
+                textAreaMinWidth -= textAreaMinWidth/4;
+                var finalx = $("#newTextAreaC").offset().left - canvasOffLeft;
+                var finaly = ($('#newTextAreaC').offset().top - canvasOffTop) + ($('#newTextAreaC').height() * .65);
+                
+                //ajustes para não sair para fora do canvas
+                finalx = finalx < 0 ? 0 : finalx;
+                finalx = (finalx + $('#newTextAreaC').width()) > element.width ?
+                ((element.width - $('#newTextAreaC').width())+textAreaMinWidth) : finalx;
+                finaly = finaly < 0 ? 0 : finaly;
+                finaly = finaly > element.height ? element.height : finaly;
+                
+                finalx += settings.xAjust;
+                finaly += settings.yAjust;
+                
                 var ctx = element.getContext('2d');
                 ctx.font = text_css["font-size"]+' '+text_css["font-family"];
-                ctx.fillStyle = text_css.color;     
-                var rect = element.getBoundingClientRect();
-                ctx.fillText(text.value,
-                    (ev.clientX - rect.left) + settings.xAjust,
-                    (ev.clientY - rect.top) + settings.yAjust
-                    );
-                ctx.restore();
+                ctx.fillStyle = text_css.color;
+                console.log(ctx.measureText(text.value));
+                var lineheigth = parseInt(settings.height.replace(/[^0-9\.]+/g,''));
+                
+                console.log(text);
+                if(splited.length > 1) {
+                    let line = lineheigth*(-1);
+                    for (let i = 0; i < splited.length; i++) {
+                        ctx.fillText(splited[i],finalx,finaly+line);   
+                        line += lineheigth;
+                    }
+                } else {
+                    ctx.fillText(splited[0],finalx,finaly);   
+                }
+                
                 if(typeof(callback) == 'function') callback(text);
             }
-            var resizeTextArea = function(e,textArea,ev){
+            
+            this.resizeTextArea = (e,textArea) => {
                 
                 var span = document.getElementById('helperSpan');
                 if(span == null){
@@ -95,79 +133,87 @@ window._textCanvas = (function(target,options,callback) {
                 span.style["min-height"] = '12px';    
                 var body = document.getElementsByTagName('body')[0];
                 body.parentNode.insertBefore(span, body.nextSibling);
-
+                
                 //TODO, TIRAR DO JQUERY
                 textArea.style.height = $(span).height() + 6 +'px';
                 textArea.style.width = $(span).width() + 10 + 'px';
                 
             }
             
-            this.newTextArea = function(ev) {
-                removeEmpty();
-                lastClickEvent = ev;
+            this.newTextArea = (clickEvent) => {
+                //removeEmpty();
+                self.removeTextArea(0);
+                
                 var textArea = document.createElement('textarea');
-                textArea = setStyle(textArea,settings);
-                var position = mouseAbs(ev)
-                textArea.style.left = position[0]+'px';
-                textArea.style.top = position[1]+'px';
+                textArea = self.setStyle(textArea,settings);
+                textArea.id = 'newTextAreaC'
+                var position = self.mouseAbs(clickEvent)
+                textArea.style.left = ((position[0] - $(textArea).width())+settings.xAjustClick)+ 'px';
+                textArea.style.top = ((position[1] - $(textArea).height())+settings.yAjustClick)+ 'px';
+                
                 element.parentNode.insertBefore(textArea, element.nextSibling);
-                textArea.onpaste = function(e) {
+                
+                textArea.onpaste = (e)=> {
                     //TODO ARRUMAR O COLA DE TEXTO
-                    resizeTextArea(e,textArea);
+                    self.resizeTextArea(e,textArea);
                 };
-                textArea.onkeydown = function(e) {
-                    resizeTextArea(e,textArea,ev);
+                textArea.onkeydown = (e)=> {
+                    self.resizeTextArea(e,textArea);
                 };
-                textArea.onfocus = function() {
+                textArea.onfocus = () =>{
                     textArea.style.border = '1px dotted #cccccc';
                 };
-                textArea.onblur = function() {
-                    draw(currentTextArea,lastClickEvent,function(textArea){
-                        removeTextArea(0);
+                textArea.onblur = (e)=> {
+                    self.draw(textArea,clickEvent,function(textArea){
+                        
+                        if(textArea.value.length > 0 ) {console.log('Escreveu: '+textArea.value);}
                         
                     });
                     textArea.style.border = 'none';
                     textArea.style.display = 'none';
                 };
+                
                 textArea.focus();
-                currentTextArea = textArea;
                 messages.push(textArea);
                 
             }
             
-            var setStyle =  function(elem, styleSettings){
+            this.setStyle = (elem, styleSettings) => {
                 for (var property in styleSettings){
                     elem.style[property] = styleSettings[property];
                 }
                 return elem;
             }
             
-            var removeTextArea = function(index) {    
+            this.removeTextArea = (index) => {    
                 var elem = messages[index]
-                if(elem.parentNode){
-                    elem.parentNode.removeChild(elem);
+                if(elem && elem.parentNode){
+                    
+                    if ($(elem).length > 0) {
+                        $(elem).remove();
+                    }
                 }
                 messages.splice(index, 1); 
             };
             
-            var removeEmpty = function() {
+            this.removeEmpty = () => {
                 messages.forEach(function(message,index){
                     if(message.value == ''){
-                        removeTextArea(index);
+                        self.removeTextArea(index);
                     } else if(message.value.length > 0) {
-                        draw(currentTextArea,lastClickEvent);
+                        //draw(currentTextArea,lastClickEvent);
                     }
                 });
             }
             
-            var handleEsc = function(e) {
+            this.handleEsc = (e) => {
                 if(e.keyCode == 27) {
-                    removeTextArea(messages.length-1);
+                    self.removeTextArea(messages.length-1);
                 }
             };
             
-            document.keydown = function(e){
-                handleEsc(e);
+            document.onkeydown = (e) => {
+                self.handleEsc(e);
             };
         }
     }
